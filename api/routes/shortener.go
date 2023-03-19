@@ -1,9 +1,11 @@
 package routes
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ikatwal/url-shortener/api/helpers"
 )
 
 type request struct {
@@ -21,5 +23,16 @@ type response struct {
 }
 
 func ShortenURL(c *gin.Context) {
+	body := new(request)
+	if err := c.ShouldBindJSON(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// rate limiting
+	// validate the url and domain
+	if !helpers.IsValidURL(body.URL) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad url entered"})
+		return
+	}
 
 }
