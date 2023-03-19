@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ikatwal/url-shortener/api/routes"
 	"github.com/joho/godotenv"
 )
 

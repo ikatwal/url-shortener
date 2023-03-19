@@ -1,6 +1,10 @@
 package routes
 
-import "time"
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
 
 type request struct {
 	URL         string        `json:"url"`
@@ -14,4 +18,8 @@ type response struct {
 	Expiry         time.Duration `json:"expiry"`
 	XRateRemaining int           `json:"rate_limit"`
 	XRateLimitRest time.Duration `json:"rate_limit_reset"`
+}
+
+func ShortenURL(c *gin.Context) {
+
 }
