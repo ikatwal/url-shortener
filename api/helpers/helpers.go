@@ -48,7 +48,6 @@ func EnforceHTTP(url string) string {
 	if len(url) < 4 {
 		return ""
 	}
-
 	if url[:4] != "http" {
 		return "http://" + url
 	}
