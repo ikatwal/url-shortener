@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ikatwal/url-shortener/api/routes"
 	"github.com/joho/godotenv"
 )
 
@@ -16,7 +17,7 @@ func initializeRoutes(router *gin.Engine) {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("error loading env file: %v", err)
+		log.Fatalf("error loading env file: %v", err)
 	}
 	router := gin.Default()
 	initializeRoutes(router)
