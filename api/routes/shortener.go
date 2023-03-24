@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/ikatwal/url-shortener/api/database"
 	"github.com/ikatwal/url-shortener/api/helpers"
 	"github.com/redis/go-redis/v9"
@@ -56,6 +57,27 @@ func ShortenURL(c *gin.Context) {
 
 	//enfirce https, SSL
 	body.URL = helpers.EnforceHTTP(body.URL)
+	var id string
+	if body.CustomShort == "" {
+		id = uuid.New().String()[:6]
+	} else {
+		id = body.CustomShort
+	}
+	db1 := database.NewClient(0)
+	defer db1.Close()
+
+	val, _ = db1.Get(database.Context, id).Result()
+	if val != "" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "url custom short is already in use"})
+	}
+	if body.Expiry == 0 {
+		body.Expiry = 24
+	}
+
+	err = db1.Set(database.Context, id, body.URL, body.Expiry*3600*time.Second).Err()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to connect to server"})
+	}
 
 	db.Decr(database.Context, c.ClientIP())
 
