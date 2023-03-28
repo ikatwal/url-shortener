@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ikatwal/url-shortener/api/database"
 	"github.com/ikatwal/url-shortener/api/helpers"
+	"github.com/ikatwal/url-shortener/database"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,11 +22,11 @@ type request struct {
 }
 
 type response struct {
-	URL            string        `json:"url"`
-	CustomShort    string        `json:"short"`
-	Expiry         time.Duration `json:"expiry"`
-	XRateRemaining int           `json:"rate_limit"`
-	XRateLimitRest time.Duration `json:"rate_limit_reset"`
+	URL             string        `json:"url"`
+	CustomShort     string        `json:"short"`
+	Expiry          time.Duration `json:"expiry"`
+	XRateRemaining  int           `json:"rate_limit"`
+	XRateLimitReset time.Duration `json:"rate_limit_reset"`
 }
 
 func ShortenURL(c *gin.Context) {
@@ -79,6 +80,20 @@ func ShortenURL(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to connect to server"})
 	}
 
+	// response contains the url, short and expiry
+	resp := response{
+		URL:             body.URL,
+		CustomShort:     "",
+		Expiry:          body.Expiry,
+		XRateRemaining:  10,
+		XRateLimitReset: 30,
+	}
 	db.Decr(database.Context, c.ClientIP())
+	val, _ = db1.Get(database.Context, c.ClientIP()).Result()
+	resp.XRateRemaining, _ = strconv.Atoi(val)
+	ttl, _ := db1.TTL(database.Context, c.ClientIP()).Result()
+	resp.XRateLimitReset = ttl.Minutes()
 
+	resp.CustomShort = os.Getenv("DOMAIN") + "/" + id
+	c.JSON(http.StatusOK, resp)
 }
